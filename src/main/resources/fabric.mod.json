@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "adwaita-addon",
+  "version": "${version}",
+  "name": "Adwaita",
+  "description": "Brings the clean, modern look of GNOME's libadwaita design language to Meteor Client.",
+  "authors": [
+    "Pindour",
+    "X-C-0"
+  ],
+  "contact": {
+    "sources": "https://github.com/X-C-0/adwaita-addon"
+  },
+  "icon": "assets/adwaita-addon/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "me.pindour.adwaita.AdwaitaAddon"
+    ]
+  },
+  "mixins": [
+    "adwaita.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "53,132,228",
+    "modmenu": {
+      "parent": {
+        "id": "meteor-client"
+      }
+    }
+  },
+  "depends": {
+    "java": ">=21",
+    "minecraft": "${mc_targets}",
+    "meteor-client": "*"
+  }
+}
