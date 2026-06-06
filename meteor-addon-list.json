@@ -1,0 +1,10 @@
+{
+  "description": "GNOME libadwaita design language for Meteor Client",
+  "tags": ["Theme"],
+  "supported_versions": [
+    "1.21.1",
+    "1.21.4",
+    "1.21.10",
+    "1.21.11"
+  ]
+}
