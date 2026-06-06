@@ -1,0 +1,187 @@
+package me.pindour.adwaita.gui.themes.adwaita.widgets.container;
+
+import me.pindour.adwaita.api.animation.Animation;
+import me.pindour.adwaita.api.animation.Direction;
+import me.pindour.adwaita.gui.themes.adwaita.icons.AdwaitaBuiltinIcons;
+import me.pindour.adwaita.api.render.Corners;
+import me.pindour.adwaita.gui.themes.adwaita.AdwaitaGuiTheme;
+import me.pindour.adwaita.gui.themes.adwaita.AdwaitaWidget;
+import me.pindour.adwaita.utils.ColorUtils;
+import meteordevelopment.meteorclient.gui.renderer.GuiRenderer;
+import meteordevelopment.meteorclient.gui.widgets.WWidget;
+import meteordevelopment.meteorclient.gui.widgets.containers.WSection;
+import meteordevelopment.meteorclient.utils.render.color.Color;
+
+public class WAdwaitaSection extends WSection implements AdwaitaWidget {
+    private double actualHeight;
+    private double forcedHeight = -1;
+
+    private WHeader header;
+
+    private Animation animation;
+    private Animation cornerAnimation;
+
+    public WAdwaitaSection(String title, boolean expanded, WWidget headerWidget) {
+        super(title, expanded, headerWidget);
+    }
+
+    @Override
+    public void init() {
+        super.init();
+
+        animation = new Animation(
+                theme().guiAnimationEasing(),
+                theme().guiAnimationDuration(),
+                expanded ? Direction.FORWARDS : Direction.BACKWARDS
+        );
+        cornerAnimation = new Animation(
+                theme().guiAnimationEasing(),
+                theme().guiAnimationDuration(),
+                expanded ? Direction.FORWARDS : Direction.BACKWARDS
+        );
+    }
+
+    @Override
+    protected void onCalculateSize() {
+        super.onCalculateSize();
+
+        actualHeight = height;
+
+        if (animation.isRunning() || animation.getProgress() < 1) {
+            forcedHeight = (actualHeight - header.height) * animation.getProgress() + header.height;
+            height = forcedHeight;
+        }
+
+        if (headerWidget != null) {
+            headerWidget.height = header.height * 0.8;
+            headerWidget.width = header.height * 0.8;
+        }
+    }
+
+    @Override
+    protected void onRender(GuiRenderer renderer, double mouseX, double mouseY, double delta) {
+        if (!expanded && !animation.isRunning()) return;
+
+        Color backgroundColor = ColorUtils.withAlpha(
+                theme().baseColor(),
+                theme().backgroundOpacity()
+        );
+
+        Color outlineColor = ColorUtils.withAlpha(
+                theme().surface0Color(),
+                theme().backgroundOpacity()
+        );
+
+        roundedRect().pos(x, y + header.height)
+                     .size(width, height - header.height)
+                     .radius(radius(), Corners.BOTTOM)
+                     .color(backgroundColor)
+                     .outline(outlineColor, outlineWidth())
+                     .render();
+    }
+
+    @Override
+    public boolean render(GuiRenderer renderer, double mouseX, double mouseY, double delta) {
+        boolean isAnimationRunning = animation.isRunning();
+        double progress = animation.getProgress();
+
+        animProgress = expanded ? 1 : 0; // Small hack to cancel out WSection scissors, so we can use our animation
+
+        if (isAnimationRunning) {
+            forcedHeight = (actualHeight - header.height) * progress + header.height;
+            invalidate();
+        }
+
+        if (isAnimationRunning) renderer.scissorStart(x, y, width, (height - header.height) * progress + header.height);
+        boolean toReturn = super.render(renderer, mouseX, mouseY, delta);
+        if (isAnimationRunning) renderer.scissorEnd();
+
+        return toReturn;
+    }
+
+    @Override
+    protected void renderWidget(WWidget widget, GuiRenderer renderer, double mouseX, double mouseY, double delta) {
+        if (expanded || animation.getProgress() > 0 || widget instanceof WHeader) {
+            widget.render(renderer, mouseX, mouseY, delta);
+        }
+    }
+
+    @Override
+    public void setExpanded(boolean expanded) {
+        super.setExpanded(expanded);
+
+        animation.reverse();
+        if (expanded) cornerAnimation.finishedAt(Direction.FORWARDS);
+    }
+
+    @Override
+    protected WHeader createHeader() {
+        header = new WAdwaitaHeader(title);
+        return header;
+    }
+
+    protected class WAdwaitaHeader extends WHeader {
+
+        public WAdwaitaHeader(String title) {
+            super(title);
+        }
+
+        @Override
+        public void init() {
+            add(theme.horizontalSeparator(title)).expandX();
+
+            if (headerWidget != null) add(headerWidget);
+        }
+
+        @Override
+        protected void onCalculateSize() {
+            super.onCalculateSize();
+            height = theme.textHeight() * 1.5;
+        }
+
+        @Override
+        protected void onRender(GuiRenderer renderer, double mouseX, double mouseY, double delta) {
+            AdwaitaGuiTheme theme = theme();
+            double pad = pad();
+            double s = theme.textHeight() * 0.75;
+            double progress = animation.getProgress();
+            double cornerProgress = cornerAnimation.getProgress();
+
+            // Start corner animation if we're collapsing,
+            // and we're almost at the end of the main animation
+            if (!expanded
+                && progress <= 0.1
+                && !cornerAnimation.isRunning()
+                && cornerProgress > 0) {
+                cornerAnimation.start(Direction.BACKWARDS);
+            }
+
+            Color bgColor = ColorUtils.withAlpha(
+                    mouseOver ? theme.surface1Color() : theme.surface0Color(),
+                    theme.backgroundOpacity()
+            );
+
+            // Background
+            roundedRect().bounds(this)
+                         .radii(radius(),
+                                radius(),
+                                (float) (radius() * (1 - cornerProgress)),
+                                (float) (radius() * (1 - cornerProgress)))
+                         .color(bgColor)
+                         .render();
+
+            if (headerWidget != null) return;
+
+            // Expanded indicator
+            renderer.rotatedQuad(
+                    x + width - pad - s,
+                    y + height / 2 - s / 2,
+                    s,
+                    s,
+                    90 + 90 * progress,
+                    AdwaitaBuiltinIcons.ARROW.texture(),
+                    theme.textColor()
+            );
+        }
+    }
+}

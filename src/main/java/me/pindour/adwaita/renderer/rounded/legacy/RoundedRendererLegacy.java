@@ -1,0 +1,94 @@
+package me.pindour.adwaita.renderer.rounded.legacy;
+
+//? if <=1.21.4 {
+/*import com.mojang.blaze3d.systems.RenderSystem;
+import me.pindour.adwaita.renderer.AdwaitaRenderer;
+import me.pindour.adwaita.renderer.rounded.RoundedRendererInternal;
+import meteordevelopment.meteorclient.renderer.GL;
+import meteordevelopment.meteorclient.utils.misc.Pool;
+import meteordevelopment.meteorclient.utils.render.color.Color;
+import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix4fStack;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class RoundedRendererLegacy implements RoundedRendererInternal {
+    private static final AdwaitaShader ROUNDED_SHADER = new AdwaitaShader("rounded_ui_legacy.vert", "rounded_ui_legacy.frag");
+    private final AdwaitaMesh roundedMesh = new AdwaitaMesh();
+    private final Pool<RoundedUniformsLegacy.RoundedCall> roundedCallPool = new Pool<>(RoundedUniformsLegacy.RoundedCall::new);
+    private final List<RoundedUniformsLegacy.RoundedCall> roundedCalls = new ArrayList<>();
+
+    @Override
+    public void begin() {
+        roundedCalls.clear();
+    }
+
+    @Override
+    public void end() {
+    }
+
+    @Override
+    public void render(double x, double y,
+                       double width, double height,
+                       float topLeft, float topRight,
+                       float bottomLeft, float bottomRight,
+                       Color fillColor, Color outlineColor, float outlineWidth) {
+
+        RoundedUniformsLegacy.RoundedCall call = roundedCallPool.get();
+        AdwaitaRenderer renderer = AdwaitaRenderer.get();
+        call.set(
+                (float) x,
+                (float) y,
+                (float) width,
+                (float) height,
+                topLeft,
+                topRight,
+                bottomLeft,
+                bottomRight,
+                fillColor,
+                outlineColor,
+                outlineWidth,
+                renderer.isClipEnabled(),
+                renderer.getClipMinX(),
+                renderer.getClipMinY(),
+                renderer.getClipMaxX(),
+                renderer.getClipMaxY()
+        );
+        roundedCalls.add(call);
+    }
+
+    @Override
+    public void render(MatrixStack matrices) {
+        if (roundedCalls.isEmpty()) return;
+
+        GL.saveState();
+        GL.disableDepth();
+        GL.enableBlend();
+        GL.disableCull();
+
+        Matrix4fStack modelView = RenderSystem.getModelViewStack();
+        modelView.pushMatrix();
+        if (matrices != null) {
+            modelView.mul(matrices.peek().getPositionMatrix());
+        }
+
+        ROUNDED_SHADER.bind();
+        ROUNDED_SHADER.set("u_Proj", RenderSystem.getProjectionMatrix());
+        ROUNDED_SHADER.set("u_ModelView", modelView);
+
+        for (RoundedUniformsLegacy.RoundedCall call : roundedCalls) {
+            RoundedUniformsLegacy.update(ROUNDED_SHADER, call);
+            roundedMesh.render(call.x, call.y, call.width, call.height);
+            roundedCallPool.free(call);
+        }
+
+        roundedCalls.clear();
+        modelView.popMatrix();
+        GL.restoreState();
+    }
+
+    @Override
+    public void flipFrame() { }
+}
+*///?}
