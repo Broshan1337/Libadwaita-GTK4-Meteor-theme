@@ -18,13 +18,13 @@ purposeful accent, and calm neutral grays.
 <details>
 <summary>☀️ Adwaita Light</summary>
 <br/>
-<img width="1248" height="1136" alt="image" src="https://github.com/user-attachments/assets/bd270ccf-bddd-4f06-be3d-75f1017546a0" />
+<img width="1248" height="1136" alt="image" src="https://github.com/user-attachments/assets/b2cb8b98-cb2d-414f-bf79-d18503e0ad4f" />
 </details>
 
 <details>
 <summary>🌙 Adwaita Dark</summary>
 <br/>
-<img width="1248" height="1136" alt="image" src="https://github.com/user-attachments/assets/b2cb8b98-cb2d-414f-bf79-d18503e0ad4f" />
+<img width="1248" height="1136" alt="image" src="https://github.com/user-attachments/assets/bd270ccf-bddd-4f06-be3d-75f1017546a0" />
 </details>
 
 > Font used in previews: [Cantarell](https://gitlab.gnome.org/GNOME/cantarell-fonts) (GNOME's default).
